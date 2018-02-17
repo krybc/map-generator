@@ -1,0 +1,125 @@
+<h1>Generator</h1>
+
+<canvas id="canvas"></canvas>
+
+<script type="application/javascript">
+    function fade(startColor, endColor, steps, step) {
+        let scale = step / steps,
+                r = startColor.r + scale * (endColor.r - startColor.r),
+                b = startColor.b + scale * (endColor.b - startColor.b),
+                g = startColor.g + scale * (endColor.g - startColor.g);
+
+        return {
+            r: Math.round(r),
+            g: Math.round(g),
+            b: Math.round(b)
+        }
+    }
+
+    let canv = document.getElementById("canvas");
+    let c = canv.getContext("2d");
+
+    // colormap colors
+    let terrainColor = [];
+    terrainColor['error'] = {r: 0, g: 0, b: 0};
+    terrainColor['ocean'] = {r: 43, g: 159, b: 194};
+    terrainColor['depression'] = {r: 55, g: 94, b: 7};
+    terrainColor['plain1'] = {r: 69, g: 112, b: 17};
+    terrainColor['plain2'] = {r: 84, g: 133, b: 25};
+    terrainColor['highland1'] = {r: 163, g: 194, b: 39};
+    terrainColor['highland2'] = {r: 168, g: 168, b: 22};
+    terrainColor['highland3'] = {r: 128, g: 99, b: 13};
+    terrainColor['mountain1'] = {r: 227, g: 33, b: 7};
+    terrainColor['mountain2'] = {r: 179, g: 26, b: 6};
+    terrainColor['mountain3'] = {r: 128, g: 15, b: 0};
+
+    let waterStart = {r: 10, g: 20, b: 40},
+            waterEnd = {r: 39, g: 50, b: 63},
+            grassStart = {r: 22, g: 38, b: 3},
+            grassEnd = {r: 67, g: 100, b: 18},
+            mtnEnd = {r: 60, g: 56, b: 31},
+            mtnStart = {r: 67, g: 80, b: 18},
+            rocamtStart = {r: 90, g: 90, b: 90},
+            rocamtEnd = {r: 130, g: 130, b: 130},
+            snowStart = {r: 255, g: 255, b: 255},
+            snowEnd = {r: 200, g: 200, b: 200};
+    let terrain = 'ocean';
+
+    let map = {
+        width: {{map.params.width}},
+        height: {{map.params.height}}
+    };
+
+    let size = 20;
+
+    let radius = size / 2;
+    let height = Math.sqrt(3) * radius;
+    let width = 2 * radius;
+    let side = (3 / 2) * radius;
+    let offsetColumn = false;
+
+    // ustalenie rozmiarów canvas
+    canv.setAttribute('width', map.width * size * 1.1);
+    canv.setAttribute('height', map.height * size * 0.8);
+
+        {{#each map.tiles}}
+        var x = {{@index}};
+            {{#each this}}
+            var y = {{@index}};
+
+            terrain = '{{this.terrain}}';
+            colorFill = terrainColor[terrain.toString()];
+
+            if (!offsetColumn) {
+                currentHexX = (y * size) + size;
+                currentHexY = (x * side) + size;
+            } else {
+                currentHexY = x * side + size;
+                currentHexX = (y * size) + size + (size * 0.5);
+            }
+
+            c.strokeStyle = "#000";
+            c.fillStyle = "rgba("+colorFill.r+","+colorFill.g+","+colorFill.b+", 1)";
+            c.beginPath();
+
+            c.moveTo(currentHexX + radius, currentHexY);
+            c.lineTo(currentHexX + size, currentHexY + size - side);
+            c.lineTo(currentHexX + size, currentHexY + side);
+            c.lineTo(currentHexX + radius, currentHexY + size);
+            c.lineTo(currentHexX, currentHexY + side);
+            c.lineTo(currentHexX, currentHexY + size - side);
+
+            c.closePath();
+            c.fill();
+
+            {{/each}}
+        offsetColumn = !offsetColumn;
+        {{/each}}
+</script>
+<style>
+    #grid {
+        width: 300px;
+    }
+
+    #stage {
+        font-family: Courier New, monospace;
+    }
+
+    span {
+        display: none;
+    }
+
+    .tile {
+        float: left;
+        height: 2px;
+        width: 2px;
+    }
+
+    .water {
+        background-color: #55F;
+    }
+
+    .earth {
+        background-color: #273;
+    }
+</style>

@@ -1,0 +1,158 @@
+<h1>Generator</h1>
+
+<div id="stage"></div>
+<div id="grid"></div>
+<canvas id="canvas"></canvas>
+<script type="application/javascript">
+    function drawHexGrid(opts, c) {
+
+        var alpha       = opts.alpha || 1;
+        var color       = opts.color || '#1e1e1e';
+        var lineWidth   = opts.lineWidth || 1;
+        var radius      = opts.radius || 20;
+
+
+        var mapGridCanvas = c.getContext("2d");
+        mapGridCanvas.clearRect(0, 0, c.width, c.height);
+        mapGridCanvas.globalAlpha = alpha;
+        mapGridCanvas.strokeStyle = color;
+        mapGridCanvas.lineWidth = lineWidth;
+
+        //length of line
+        r = radius;
+        part = 60;
+        hexSize = r*Math.sqrt(3);
+        yHexSize = r*Math.sqrt(2.25);
+        xHexes = 2000 / hexSize;
+        yHexes = 2000 / yHexSize;
+
+        mapGridCanvas.beginPath();
+
+        //loop through hex "rows" and every other row shift
+        for (xGrid=0;xGrid<=xHexes;xGrid++){
+            for (yGrid=0;yGrid<=yHexes;yGrid++){
+                if (yGrid % 2 == 0) {
+                    //even row
+                    shiftX = hexSize/2;
+                }
+                else {
+                    //odd row
+                    shiftX=0;
+                }
+                for (i=0;i<=6;i++) {
+                    var a = i * part - 90;
+                    x = r * Math.cos(a * Math.PI / 180)+xGrid*hexSize+shiftX;
+                    y = r * Math.sin(a * Math.PI / 180)+yGrid*yHexSize;
+                    if (i == 0) {
+                        mapGridCanvas.moveTo(x,y);
+                    }
+                    else {
+                        mapGridCanvas.lineTo(x,y);
+                    }
+                }
+            }
+        }
+        mapGridCanvas.stroke();
+
+        return c;
+    }
+
+    var
+            canvasWidth = 640,
+            canvasHeight = 480,
+            canvas = document.getElementById('canvas'),
+            ctx = canvas.getContext('2d'),
+            imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight),
+            data = imageData.data;
+
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+        {{#each items}}
+        $('#grid').append('<div style="clear:both;">');
+        {{#each this}}
+            var bg = ('{{type}}' == 'grass') ? '#273' : '#55f';
+        $('#grid').append('<div style="float:left; background: ' + bg + ';width: 2px;height:2px;"></div>');
+        {{/each}}
+        $('#grid').append('</div>');
+        {{/each}}
+
+
+    var tileArray = new Array();
+    var probabilityModifier = 0;
+    var mapWidth=400;
+    var mapheight=200;
+    var tileSize=2;
+
+    var landMassAmount=5; // scale of 1 to 5
+    var landMassSize=4; // scale of 1 to 5
+
+
+    $('#stage').css('width',(mapWidth*tileSize)+'px');
+
+
+    for (var i = 0; i < mapWidth*mapheight; i++) {
+
+        var probability = 0;
+        var probabilityModifier = 0;
+
+        if (i<(mapWidth*2)||i%mapWidth<2||i%mapWidth>(mapWidth-3)||i>(mapWidth*mapheight)-((mapWidth*2)+1)){
+
+            // make the edges of the map water
+            probability=0;
+        } else {
+
+            probability = 15 + landMassAmount;
+
+            if (i>(mapWidth*2)+2){
+
+                // Conform the tile upwards and to the left to its surroundings
+                var conformity =
+                        (tileArray[i-mapWidth-1]==(tileArray[i-(mapWidth*2)-1]))+
+                        (tileArray[i-mapWidth-1]==(tileArray[i-mapWidth]))+
+                        (tileArray[i-mapWidth-1]==(tileArray[i-1]))+
+                        (tileArray[i-mapWidth-1]==(tileArray[i-mapWidth-2]));
+
+                if (conformity<2)
+                {
+                    tileArray[i-mapWidth-1]=!tileArray[i-mapWidth-1];
+                }
+            }
+
+            // get the probability of what type of tile this would be based on its surroundings
+            probabilityModifier = (tileArray[i-1]+tileArray[i-mapWidth]+tileArray[i-mapWidth+1])*(19+(landMassSize*1.4));
+        }
+
+        rndm=(Math.random()*101);
+        tileArray[i]=(rndm<(probability+probabilityModifier));
+
+    }
+
+    for (var i = 0; i < tileArray.length; i++) {
+        if (tileArray[i]){
+            $('#stage').append('<div class="tile earth '+i+'"> </div>');
+        }
+        else{
+            $('#stage').append('<div class="tile water '+i+'"> </div>');
+        }
+    }
+</script>
+<style>
+    #stage{
+        font-family: Courier New, monospace;
+    }
+    span{
+        display: none;
+    }
+    .tile{
+        float:left;
+        height:2px;
+        width:2px;
+    }
+    .water{
+        background-color: #55F;
+    }
+    .earth{
+        background-color: #273;
+    }
+</style>
