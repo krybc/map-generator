@@ -11,7 +11,6 @@
         var lineWidth   = opts.lineWidth || 1;
         var radius      = opts.radius || 20;
 
-
         var mapGridCanvas = c.getContext("2d");
         mapGridCanvas.clearRect(0, 0, c.width, c.height);
         mapGridCanvas.globalAlpha = alpha;
@@ -23,8 +22,8 @@
         part = 60;
         hexSize = r*Math.sqrt(3);
         yHexSize = r*Math.sqrt(2.25);
-        xHexes = 2000 / hexSize;
-        yHexes = 2000 / yHexSize;
+        xHexes = 1024 / hexSize;
+        yHexes = 1024 / yHexSize;
 
         mapGridCanvas.beginPath();
 
@@ -70,15 +69,15 @@
 
         {{#each items}}
         $('#grid').append('<div style="clear:both;">');
-        {{#each this}}
+            {{#each this}}
             var bg = ('{{type}}' == 'grass') ? '#273' : '#55f';
-        $('#grid').append('<div style="float:left; background: ' + bg + ';width: 2px;height:2px;"></div>');
-        {{/each}}
+            $('#grid').append('<div style="float:left; background: ' + bg + ';width: 2px;height:2px;"></div>');
+            {{/each}}
         $('#grid').append('</div>');
         {{/each}}
 
 
-    var tileArray = new Array();
+    var tileArray = [];
     var probabilityModifier = 0;
     var mapWidth=400;
     var mapheight=200;
